@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -11,14 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Application struct {
-	InfoLog       *log.Logger
-	ErrorLog      *log.Logger
-	TemplateCache map[string]*template.Template
-	Client        *mongo.Client
-	SecretKey     []byte
+	InfoLog  *log.Logger
+	ErrorLog *log.Logger
+	// TemplateCache map[string]*template.Template
+	Client    *mongo.Client
+	SecretKey []byte
 }
 
 func (app *Application) connectMongoDB(password *string) error {
@@ -54,4 +54,24 @@ func (app *Application) ServerError(w http.ResponseWriter, err error) {
 	app.ErrorLog.Output(2, trace)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
+
+// HashPassword generates a bcrypt hash for the given password.
+func HashPassword(password string) ([]byte, error) {
+	if len(password) > 72 {
+		password = password[len(password)-72:]
+	}
+
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return bytes, err
+}
+
+// VerifyPassword verifies if the given password matches the stored hash.
+func VerifyPassword(password, hash string) bool {
+	if len(password) > 72 {
+		password = password[len(password)-72:]
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

@@ -14,6 +14,30 @@
   <body>
     <h1>Hello</h1>
 
+    <form
+      id="generate-tokens-form"
+      action="/generate-tokens"
+      method="post"
+      name="generate-form"
+    >
+      <label for="generate-input">Give me a GUID!</label>
+      <input
+        type="text"
+        id="generate-tokens-input"
+        name="generate-input"
+        required
+      />
+      <button type="submit">Generate tokens!</button>
+    </form>
+
+    {{if .}}
+    <h4>Tokens generated!</h4>
+    <h5>Access token:</h5>
+    <p>{{ .Access }}</p>
+
+    <h5>Refresh token:</h5>
+    <p>{{ .Refresh }}</p>
+    {{end}}
     <!-- <script type="text/JavaScript" src="../static/js/script.js"></script> -->
   </body>
 </html>
